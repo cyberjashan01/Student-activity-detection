@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Teachable Machine</title>
+   <style>
+       @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Roboto:wght@300;500;700&display=swap');
+
+
+       body {
+           font-family: 'Raleway', sans-serif;
+           background: linear-gradient(135deg, #3a1c71, #ff7e5f, #feb47b, #6a11cb, #2575fc, #7f00ff, #2b5876, #4e4376);
+           color: #fff;
+           text-align: center;
+           padding: 10px;
+           margin: 0;
+           overflow-x: hidden;
+           animation: gradient-bg 14s ease infinite;
+           background-size: 800% 800%;
+       }
+
+
+       @keyframes gradient-bg {
+           0% { background-position: 0% 50%; }
+           20% { background-position: 20% 50%; }
+           40% { background-position: 40% 50%; }
+           60% { background-position: 60% 50%; }
+           80% { background-position: 80% 50%; }
+           100% { background-position: 100% 50%; }
+       }
+
+
+       h1 {
+           font-family: 'Roboto', sans-serif;
+           font-size: 2.2em;
+           font-weight: 700;
+           margin-bottom: 10px;
+           text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+       }
+
+
+       p {
+           font-family: 'Raleway', sans-serif;
+           font-size: 1em;
+           font-weight: 400;
+           margin-bottom: 20px;
+           color: rgba(255, 255, 255, 0.9);
+       }
+
+
+       #webcam-container {
+           margin: 10px auto;
+           width: 300px;
+           height: 300px;
+           border: 3px solid #fff;
+           border-radius: 15px;
+           overflow: hidden;
+           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+           animation: fade-in 1s ease-in-out;
+       }
+
+
+       @keyframes fade-in {
+           from { opacity: 0; transform: scale(0.9); }
+           to { opacity: 1; transform: scale(1); }
+       }
+
+
+       button {
+           background: linear-gradient(135deg, #f39c12, #e74c3c);
+           color: #fff;
+           font-family: 'Roboto', sans-serif;
+           font-size: 1em;
+           font-weight: 500;
+           padding: 10px 30px;
+           border: none;
+           border-radius: 25px;
+           cursor: pointer;
+           box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+           transition: all 0.4s ease;
+           margin-bottom: 15px;
+       }
+
+
+       button:hover {
+           background: linear-gradient(135deg, #e67e22, #c0392b);
+           transform: scale(1.1);
+           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+       }
+
+
+       button.camera-mode {
+           background: linear-gradient(135deg, #3498db, #1abc9c);
+           width: 80px;
+           height: 80px;
+           border-radius: 50%;
+           font-size: 0;
+           position: relative;
+           transition: all 0.3s ease;
+       }
+
+
+       button.camera-mode::after {
+           content: '';
+           position: absolute;
+           top: 25%;
+           left: 25%;
+           width: 50%;
+           height: 50%;
+           border-radius: 50%;
+           background: #fff;
+       }
+
+
+       button.camera-mode:hover {
+           transform: scale(1.2);
+           box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+       }
+
+
+       #label-container {
+           margin-top: 15px;
+           text-align: center;
+           font-family: 'Raleway', sans-serif;
+           font-size: 0.9em;
+       }
+
+
+       #label-container div {
+           background: rgba(255, 255, 255, 0.3);
+           padding: 10px;
+           margin: 8px auto;
+           width: 90%;
+           border-radius: 10px;
+           box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+           font-weight: 500;
+           animation: fade-in 0.8s ease;
+       }
+
+
+       footer {
+           margin-top: 30px;
+           font-family: 'Roboto', sans-serif;
+           font-size: 0.9em;
+           color: rgba(255, 255, 255, 0.9);
+       }
+
+
+       footer a {
+           color: #f39c12;
+           text-decoration: none;
+           font-weight: 700;
+       }
+
+
+       footer a:hover {
+           text-decoration: underline;
+           color: #ffcc00;
+       }
+
+
+       @media (max-width: 768px) {
+           #webcam-container {
+               width: 240px;
+               height: 240px;
+           }
+
+
+           button {
+               font-size: 0.9em;
+               padding: 8px 20px;
+           }
+
+
+           h1 {
+               font-size: 2em;
+           }
+
+
+           p {
+               font-size: 0.9em;
+           }
+       }
+   </style>
+   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+</head>
+
+
+<body>
+   <h1>Teachable Machine AI</h1>
+   <p>Discover the potential of AI with our interactive machine learning demo. Click below to start!</p>
+   <button id="start-button" type="button" onclick="init()">Start Webcam</button>
+   <div id="webcam-container"></div>
+   <div id="label-container"></div>
+   <footer>
+       Created with <a href="https://teachablemachine.withgoogle.com/" target="_blank">Teachable Machine</a> and TensorFlow.js.
+   </footer>
+   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+   <script type="text/javascript">
+       const URL = "https://teachablemachine.withgoogle.com/models/UlZMMUr7F/";
+
+
+       let model, webcam, labelContainer, maxPredictions;
+
+
+       async function init() {
+           const startButton = document.getElementById("start-button");
+
+
+           // Countdown Timer
+           startButton.innerHTML = "Starting in 3...";
+           let countdown = 3;
+           const interval = setInterval(() => {
+               countdown--;
+               if (countdown > 0) {
+                   startButton.innerHTML = `Starting in ${countdown}...`;
+               } else {
+                   clearInterval(interval);
+                   startButton.innerHTML = "";
+                   startButton.classList.add("camera-mode");
+                   startWebcam();
+               }
+           }, 1000);
+       }
+
+
+       async function startWebcam() {
+           const modelURL = URL + "model.json";
+           const metadataURL = URL + "metadata.json";
+
+
+           // Load the model and metadata
+           model = await tmImage.load(modelURL, metadataURL);
+           maxPredictions = model.getTotalClasses();
+
+
+           // Setup webcam
+           const flip = true; // Flip webcam for mirrored view
+           webcam = new tmImage.Webcam(300, 300, flip); // Adjust webcam size
+           await webcam.setup();
+           await webcam.play();
+           window.requestAnimationFrame(loop);
+
+
+           // Append webcam to container
+           document.getElementById("webcam-container").appendChild(webcam.canvas);
+
+
+           // Prepare label container
+           labelContainer = document.getElementById("label-container");
+           labelContainer.innerHTML = ""; // Clear existing labels
+           for (let i = 0; i < maxPredictions; i++) {
+               const div = document.createElement("div");
+               div.innerHTML = "Loading...";
+               labelContainer.appendChild(div);
+           }
+       }
+
+
+       async function loop() {
+           webcam.update(); // Update webcam frame
+           await predict(); // Run predictions
+           window.requestAnimationFrame(loop);
+       }
+
+
+       async function predict() {
+           const prediction = await model.predict(webcam.canvas);
+           for (let i = 0; i < maxPredictions; i++) {
+               const classPrediction =
+                   prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+               labelContainer.childNodes[i].innerHTML = classPrediction;
+           }
+       }
+   </script>
+</body>
+
+
+</html>
+
